@@ -19,20 +19,16 @@ def ldaLearn(X, y):
     # covmat - A single d x d learnt covariance matrix
 
     # IMPLEMENT THIS METHOD
-    print('Dimensions of X: ', X.shape)
     k = int(np.max(y))
     d = np.shape(X)[1]
     means = np.empty((d, k))
-    covmats = np.empty((d,d))
     for i in range(1, k + 1):
-        A=[]
+        A = []
         for j in range(0, X.shape[0]):
             if y[j] == i:
-               A.append(X[j,:])
-        means[:,i-1] = np.mean(A,axis=0).transpose()
+                A.append(X[j, :])
+        means[:, i - 1] = np.mean(A, axis=0).transpose()
     covmat = np.cov(X, rowvar=0)
-    print(means)
-    print(covmat)
     return means, covmat
 
 
@@ -51,15 +47,13 @@ def qdaLearn(X, y):
     means = np.empty((d, k))
     covmats = []
     for i in range(1, k + 1):
-        A=[]
+        A = []
         for j in range(0, X.shape[0]):
             if y[j] == i:
                 A.append(X[j, :])
-        means[:, i-1] = np.mean(A, axis=0).transpose()
+        means[:, i - 1] = np.mean(A, axis=0).transpose()
         covmatUnit = np.cov(A, rowvar=0)
         covmats.append(covmatUnit)
-    print(means)
-    print(covmats)
     return means, covmats
 
 
@@ -76,25 +70,24 @@ def ldaTest(means, covmat, Xtest, ytest):
 
     Data_Num = np.shape(Xtest)[0]
     Class_Num = np.shape(means)[1]
-    ypreds=[]
+    ypreds = []
     match = 0
-    for i in range(1,Data_Num+1):
+    for i in range(1, Data_Num + 1):
         p_max = 0
         class_name = 0
-        Test = np.transpose(Xtest[i-1,:])
-        for j in range(1, Class_Num+1):
-            p = np.exp((-1/2)*np.dot(np.dot(np.transpose(Test - means[:, j-1]),np.linalg.inv(covmat)),(Test - means[:, j-1])));
-            if p>p_max:
+        Test = np.transpose(Xtest[i - 1, :])
+        for j in range(1, Class_Num + 1):
+            p = np.exp((-1 / 2) * np.dot(np.dot(np.transpose(Test - means[:, j - 1]), np.linalg.inv(covmat)),
+                                         (Test - means[:, j - 1])))
+            if p > p_max:
                 class_name = j
                 p_max = p
-        if class_name == ytest[i-1]:
+        if class_name == ytest[i - 1]:
             match = match + 1
         ypreds.append(class_name)
-    acc=(match/float(Data_Num))*100
+    acc = (match / float(Data_Num)) * 100
     ypred = np.transpose(ypreds)
-    print(acc)
-    return acc,ypred
-
+    return acc, ypred
 
 
 def qdaTest(means, covmats, Xtest, ytest):
@@ -107,28 +100,29 @@ def qdaTest(means, covmats, Xtest, ytest):
     # ypred - N x 1 column vector indicating the predicted labels
     Data_Num = np.shape(Xtest)[0]
     Class_Num = np.shape(means)[1]
-    ypreds=[]
+    ypreds = []
     match = 0
-    for i in range(1,Data_Num+1):
+    for i in range(1, Data_Num + 1):
         p_max = -10000
         class_name = 0
-        Test = np.transpose(Xtest[i-1,:])
-        for j in range(1, Class_Num+1):
-            FirstItem = -(np.linalg.inv(covmats[j-1]))/2
-            SecondItem = np.dot(np.linalg.inv(covmats[j-1]),means[:,j-1])
-            ThirdItem = np.dot(np.dot(-(np.transpose(means[:,j-1]))/2,np.linalg.inv(covmats[j-1])),means[:,j-1])
-            FourthItem = -np.log(np.linalg.det(covmats[j-1]))/2
-            p = np.dot(np.transpose(Test),np.dot(FirstItem,Test))+np.dot(np.transpose(SecondItem),Test)+ThirdItem+FourthItem
-            if p>p_max:
+        Test = np.transpose(Xtest[i - 1, :])
+        for j in range(1, Class_Num + 1):
+            FirstItem = -(np.linalg.inv(covmats[j - 1])) / 2
+            SecondItem = np.dot(np.linalg.inv(covmats[j - 1]), means[:, j - 1])
+            ThirdItem = np.dot(np.dot(-(np.transpose(means[:, j - 1])) / 2, np.linalg.inv(covmats[j - 1])),
+                               means[:, j - 1])
+            FourthItem = -np.log(np.linalg.det(covmats[j - 1])) / 2
+            p = np.dot(np.transpose(Test), np.dot(FirstItem, Test)) + np.dot(np.transpose(SecondItem),
+                                                                             Test) + ThirdItem + FourthItem
+            if p > p_max:
                 class_name = j
                 p_max = p
-        if class_name == ytest[i-1]:
+        if class_name == ytest[i - 1]:
             match = match + 1
         ypreds.append(class_name)
-    acc=(match/float(Data_Num))*100
+    acc = (match / float(Data_Num)) * 100
     ypred = np.transpose(ypreds)
-    print(acc)
-    return acc,ypred
+    return acc, ypred
 
 
 def learnOLERegression(X, y):
@@ -206,12 +200,22 @@ def mapNonLinear(x, p):
     # Xp - (N x (p+1))
 
     n = len(x)
-    Xp = np.ones((n, p+1))
-    for i in range(1, p+1):
-        Xp[:, i] = x**i
+    Xp = np.ones((n, p + 1))
+    for i in range(1, p + 1):
+        Xp[:, i] = x ** i
 
     # IMPLEMENT THIS METHOD
     return Xp
+
+
+def find_min_lambda_index(mse):
+    min_mse = np.min(mse)
+    opt_lambda_index = 0
+    for i in range(1, lambdas.shape[0]):
+        if mse[i] == min_mse:
+            opt_lambda_index = i
+            break
+    return opt_lambda_index
 
 
 # Main script
@@ -241,15 +245,14 @@ xx[:, 0] = xx1.ravel()
 xx[:, 1] = xx2.ravel()
 
 fig = plt.figure(figsize=[12, 6])
-plt.subplot(1, 2, 1)
 
+plt.subplot(1, 2, 1)
 zacc, zldares = ldaTest(means, covmat, xx, np.zeros((xx.shape[0], 1)))
 plt.contourf(x1, x2, zldares.reshape((x1.shape[0], x2.shape[0])), alpha=0.3)
 plt.scatter(Xtest[:, 0], Xtest[:, 1], c=ytest.ravel())
 plt.title('LDA')
 
 plt.subplot(1, 2, 2)
-
 zacc, zqdares = qdaTest(means, covmats, xx, np.zeros((xx.shape[0], 1)))
 plt.contourf(x1, x2, zqdares.reshape((x1.shape[0], x2.shape[0])), alpha=0.3)
 plt.scatter(Xtest[:, 0], Xtest[:, 1], c=ytest.ravel())
@@ -274,6 +277,7 @@ w_i = learnOLERegression(X_i, y)
 mle_i = testOLERegression(w_i, Xtest_i, ytest)
 mle_train_i = testOLERegression(w_i, X_i, y)
 
+print()
 print("---------Linear Regression---------")
 print('MSE without intercept for testing data: ' + str(mle))
 print('MSE without intercept for training data: ' + str(mle_train))
@@ -288,6 +292,7 @@ lambdas = np.linspace(0, 1, num=k)
 i = 0
 mses3_train = np.zeros((k, 1))
 mses3 = np.zeros((k, 1))
+
 for lambd in lambdas:
     w_l = learnRidgeRegression(X_i, y, lambd)
     mses3_train[i] = testOLERegression(w_l, X_i, y)
@@ -296,32 +301,26 @@ for lambd in lambdas:
 fig = plt.figure(figsize=[12, 6])
 plt.subplot(1, 2, 1)
 
-mse_test_min = np.min(mses3)
-mse_train_min = np.min(mses3_train)
-opt_lambda = 0
-opt_lambda_index = 0
-for i in range(0, lambdas.shape[0]):
-    if mses3[i] == mse_test_min:
-        opt_lambda = lambdas[i]
-        opt_lambda_index = i
-        break
+opt_lambda_index = find_min_lambda_index(mses3)
+opt_lambda = lambdas[opt_lambda_index]
+mse_test_min = mses3[opt_lambda_index]
+mse_train_min = mses3_train[opt_lambda_index]
 
-# color = np.where(mask, 'red', 'blue')
 print("---------Ridge Regression---------")
 print('Minimum value of MSE for testing data with intercept: ', mse_test_min)
 print('Value of MSE for training data with intercept at the optimal testing data lambda value: ',
       mses3_train[opt_lambda_index][0])
 print('Optimal lambda is: ', opt_lambda)
-# plt.plot(x[1:], y[1:], 'ro')
 
 plt.plot(lambdas, mses3_train)
 plt.title('MSE for Train Data')
 plt.plot(opt_lambda, mses3_train[opt_lambda_index], 'rx', )
-plt.xticks([opt_lambda, 0.2, 0.4, 0.6, 0.8])
+plt.xticks([opt_lambda, 0.2, 0.4, 0.6, 0.8, 1])
 plt.yticks([2200, 2400, int(mses3_train[opt_lambda_index][0]), 2600, 2800, 3000, 3200])
+
 plt.subplot(1, 2, 2)
 plt.plot(lambdas, mses3)
-plt.xticks([opt_lambda, 0.2, 0.4, 0.6, 0.8])
+plt.xticks([opt_lambda, 0.2, 0.4, 0.6, 0.8, 1])
 plt.yticks([int(mse_test_min), 3000, 3200, 3400, 3600, 3800])
 plt.plot(opt_lambda, mse_test_min, 'rx', )
 plt.title('MSE for Test Data')
@@ -330,10 +329,13 @@ plt.show()
 
 weight_diff = np.subtract(np.abs(w_l), np.abs(w_i))
 
-# for weight in weight_diff:
-    
+greater_ridge = 0
+for weight in weight_diff:
+    if weight < 0:
+        greater_ridge += 1
 
-print('difference between ridge regression weights and linear regression weights: ', weight_diff)
+print('Number of weight magnitudes in ridge regression that are larger than '
+      'corresponding weights in linear regression: ', greater_ridge, '/', w_l.shape[0] - 1)
 # # Problem 4
 k = 101
 lambdas = np.linspace(0, 1, num=k)
@@ -342,6 +344,7 @@ mses4_train = np.zeros((k, 1))
 mses4 = np.zeros((k, 1))
 opts = {'maxiter': 20}  # Preferred value.
 w_init = np.ones((X_i.shape[1], 1))
+
 for lambd in lambdas:
     args = (X_i, y, lambd)
     w_l = minimize(regressionObjVal, w_init, jac=True, args=args, method='CG', options=opts)
@@ -350,18 +353,32 @@ for lambd in lambdas:
     mses4_train[i] = testOLERegression(w_l, X_i, y)
     mses4[i] = testOLERegression(w_l, Xtest_i, ytest)
     i = i + 1
+
+grad_opt_lambda_index_train = find_min_lambda_index(mses4_train)
+grad_opt_lambda_index_test = find_min_lambda_index(mses4)
+grad_opt_lambda_train = lambdas[grad_opt_lambda_index_train]
+grad_opt_lambda_test = lambdas[grad_opt_lambda_index_test]
+
 fig = plt.figure(figsize=[12, 6])
+
 plt.subplot(1, 2, 1)
 plt.plot(lambdas, mses4_train)
 plt.plot(lambdas, mses3_train)
 plt.title('MSE for Train Data')
 plt.legend(['Using scipy.minimize', 'Direct minimization'])
+plt.plot(grad_opt_lambda_train, mses4_train[grad_opt_lambda_index_train], 'rx', )
+plt.xticks([grad_opt_lambda_train, 0.2, 0.4, 0.6, 0.8, 1])
+plt.yticks([2200, 2400, int(mses4_train[grad_opt_lambda_index_train][0]), 2600, 2800, 3000, 3200])
 
 plt.subplot(1, 2, 2)
 plt.plot(lambdas, mses4)
 plt.plot(lambdas, mses3)
 plt.title('MSE for Test Data')
 plt.legend(['Using scipy.minimize', 'Direct minimization'])
+plt.plot(grad_opt_lambda_test, mses4[grad_opt_lambda_index_test][0], 'rx', )
+plt.xticks([grad_opt_lambda_test, 0.2, 0.4, 0.6, 0.8, 1])
+plt.yticks([2800, int(mses4[grad_opt_lambda_index_test][0]), 3000, 3200])
+
 plt.show()
 
 # Problem 5
@@ -389,4 +406,3 @@ plt.plot(range(pmax), mses5)
 plt.title('MSE for Test Data')
 plt.legend(('No Regularization', 'Regularization'))
 plt.show()
-
