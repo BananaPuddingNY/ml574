@@ -330,7 +330,7 @@ plt.show()
 
 weight_diff = np.subtract(np.abs(w_l), np.abs(w_i))
 
-for weight in weight_diff:
+# for weight in weight_diff:
     
 
 print('difference between ridge regression weights and linear regression weights: ', weight_diff)
