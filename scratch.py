@@ -138,6 +138,12 @@ def learnOLERegression(X, y):
     # Output:
     # w = d x 1
 
+    xTran = np.transpose(X)
+    mulres = np.matmul(xTran, X)
+    XTranXInv = inv(mulres)
+    XTranY = np.matmul(xTran, y)
+    w = np.matmul(XTranXInv, XTranY)
+
     # IMPLEMENT THIS METHOD
     return w
 
@@ -149,6 +155,14 @@ def learnRidgeRegression(X, y, lambd):
     # lambd = ridge parameter (scalar)
     # Output:
     # w = d x 1
+
+    xTran = np.transpose(X)
+    I = np.eye(len(X[0]))
+    for i in range(len(I)):
+        I[i][i] = lambd
+    XTranXInv = inv(np.dot(xTran, X) + I)
+    XTranY = np.dot(xTran, y)
+    w = np.dot(XTranXInv, XTranY)
 
     # IMPLEMENT THIS METHOD
     return w
@@ -162,6 +176,11 @@ def testOLERegression(w, Xtest, ytest):
     # Output:
     # mse
 
+    pred = np.matmul(Xtest, w)
+    diff = np.subtract(ytest, pred)
+    prod = np.matmul(np.transpose(diff), diff)
+    mse = prod[0][0] / len(ytest)
+
     # IMPLEMENT THIS METHOD
     return mse
 
@@ -170,9 +189,13 @@ def regressionObjVal(w, X, y, lambd):
     # compute squared error (scalar) and gradient of squared error with respect
     # to w (vector) for the given data X and y and the regularization parameter
     # lambda
-
-    # IMPLEMENT THIS METHOD
-    return error, error_grad
+    pred = np.transpose(np.matrix(np.dot(X, w)))
+    diff = np.subtract(y, pred)
+    prod = 0.5 * np.dot(np.transpose(diff), diff)
+    wTw = np.dot(np.transpose(w), w)
+    error = prod + (0.5 * np.dot(lambd, wTw))
+    error_grad = np.transpose(np.matrix(np.dot(lambd, w))) - np.dot(np.transpose(X), diff)
+    return np.squeeze(np.asarray(error)), np.squeeze(np.asarray(error_grad))
 
 
 def mapNonLinear(x, p):
@@ -181,6 +204,11 @@ def mapNonLinear(x, p):
     # p - integer (>= 0)
     # Outputs:
     # Xp - (N x (p+1))
+
+    n = len(x)
+    Xp = np.ones((n, p+1))
+    for i in range(1, p+1):
+        Xp[:, i] = x**i
 
     # IMPLEMENT THIS METHOD
     return Xp
@@ -196,38 +224,38 @@ else:
     X, y, Xtest, ytest = pickle.load(open('sample.pickle', 'rb'), encoding='latin1')
 
 # LDA
-means, covmat = ldaLearn(X, y)
-ldaacc, ldares = ldaTest(means, covmat, Xtest, ytest)
-print('LDA Accuracy = ' + str(ldaacc))
-# QDA
-means, covmats = qdaLearn(X, y)
-qdaacc, qdares = qdaTest(means, covmats, Xtest, ytest)
-print('QDA Accuracy = ' + str(qdaacc))
-
-# plotting boundaries
-x1 = np.linspace(-5, 20, 100)
-x2 = np.linspace(-5, 20, 100)
-xx1, xx2 = np.meshgrid(x1, x2)
-xx = np.zeros((x1.shape[0] * x2.shape[0], 2))
-xx[:, 0] = xx1.ravel()
-xx[:, 1] = xx2.ravel()
-
-fig = plt.figure(figsize=[12, 6])
-plt.subplot(1, 2, 1)
-
-zacc, zldares = ldaTest(means, covmat, xx, np.zeros((xx.shape[0], 1)))
-plt.contourf(x1, x2, zldares.reshape((x1.shape[0], x2.shape[0])), alpha=0.3)
-plt.scatter(Xtest[:, 0], Xtest[:, 1], c=ytest)
-plt.title('LDA')
-
-plt.subplot(1, 2, 2)
-
-zacc, zqdares = qdaTest(means, covmats, xx, np.zeros((xx.shape[0], 1)))
-plt.contourf(x1, x2, zqdares.reshape((x1.shape[0], x2.shape[0])), alpha=0.3)
-plt.scatter(Xtest[:, 0], Xtest[:, 1], c=ytest)
-plt.title('QDA')
-
-plt.show()
+# means, covmat = ldaLearn(X, y)
+# ldaacc, ldares = ldaTest(means, covmat, Xtest, ytest)
+# print('LDA Accuracy = ' + str(ldaacc))
+# # QDA
+# means, covmats = qdaLearn(X, y)
+# qdaacc, qdares = qdaTest(means, covmats, Xtest, ytest)
+# print('QDA Accuracy = ' + str(qdaacc))
+#
+# # plotting boundaries
+# x1 = np.linspace(-5, 20, 100)
+# x2 = np.linspace(-5, 20, 100)
+# xx1, xx2 = np.meshgrid(x1, x2)
+# xx = np.zeros((x1.shape[0] * x2.shape[0], 2))
+# xx[:, 0] = xx1.ravel()
+# xx[:, 1] = xx2.ravel()
+#
+# fig = plt.figure(figsize=[12, 6])
+# plt.subplot(1, 2, 1)
+#
+# zacc, zldares = ldaTest(means, covmat, xx, np.zeros((xx.shape[0], 1)))
+# plt.contourf(x1, x2, zldares.reshape((x1.shape[0], x2.shape[0])), alpha=0.3)
+# plt.scatter(Xtest[:, 0], Xtest[:, 1], c=ytest)
+# plt.title('LDA')
+#
+# plt.subplot(1, 2, 2)
+#
+# zacc, zqdares = qdaTest(means, covmats, xx, np.zeros((xx.shape[0], 1)))
+# plt.contourf(x1, x2, zqdares.reshape((x1.shape[0], x2.shape[0])), alpha=0.3)
+# plt.scatter(Xtest[:, 0], Xtest[:, 1], c=ytest)
+# plt.title('QDA')
+#
+# plt.show()
 # Problem 2
 if sys.version_info.major == 2:
     X, y, Xtest, ytest = pickle.load(open('diabetes.pickle', 'rb'))
@@ -240,12 +268,19 @@ Xtest_i = np.concatenate((np.ones((Xtest.shape[0], 1)), Xtest), axis=1)
 
 w = learnOLERegression(X, y)
 mle = testOLERegression(w, Xtest, ytest)
+mle_train = testOLERegression(w, X, y)
 
 w_i = learnOLERegression(X_i, y)
 mle_i = testOLERegression(w_i, Xtest_i, ytest)
+mle_train_i = testOLERegression(w_i, X_i, y)
 
-print('MSE without intercept ' + str(mle))
-print('MSE with intercept ' + str(mle_i))
+print("---------Linear Regression---------")
+print('MSE without intercept for testing data: ' + str(mle))
+print('MSE without intercept for training data: ' + str(mle_train))
+
+print('MSE with intercept for testing data: ' + str(mle_i))
+print('MSE with intercept for training data: ' + str(mle_train_i))
+print()
 
 # Problem 3
 k = 101
@@ -260,14 +295,46 @@ for lambd in lambdas:
     i = i + 1
 fig = plt.figure(figsize=[12, 6])
 plt.subplot(1, 2, 1)
+
+mse_test_min = np.min(mses3)
+mse_train_min = np.min(mses3_train)
+opt_lambda = 0
+opt_lambda_index = 0
+for i in range(0, lambdas.shape[0]):
+    if mses3[i] == mse_test_min:
+        opt_lambda = lambdas[i]
+        opt_lambda_index = i
+        break
+
+# color = np.where(mask, 'red', 'blue')
+print("---------Ridge Regression---------")
+print('Minimum value of MSE for testing data with intercept: ', mse_test_min)
+print('Value of MSE for training data with intercept at the optimal testing data lambda value: ',
+      mses3_train[opt_lambda_index][0])
+print('Optimal lambda is: ', opt_lambda)
+# plt.plot(x[1:], y[1:], 'ro')
+
 plt.plot(lambdas, mses3_train)
 plt.title('MSE for Train Data')
+plt.plot(opt_lambda, mses3_train[opt_lambda_index], 'rx', )
+plt.xticks([opt_lambda, 0.2, 0.4, 0.6, 0.8])
+plt.yticks([2200, 2400, int(mses3_train[opt_lambda_index][0]), 2600, 2800, 3000, 3200])
 plt.subplot(1, 2, 2)
 plt.plot(lambdas, mses3)
+plt.xticks([opt_lambda, 0.2, 0.4, 0.6, 0.8])
+plt.yticks([int(mse_test_min), 3000, 3200, 3400, 3600, 3800])
+plt.plot(opt_lambda, mse_test_min, 'rx', )
 plt.title('MSE for Test Data')
 
 plt.show()
-# Problem 4
+
+weight_diff = np.subtract(np.abs(w_l), np.abs(w_i))
+
+for weight in weight_diff:
+    
+
+print('difference between ridge regression weights and linear regression weights: ', weight_diff)
+# # Problem 4
 k = 101
 lambdas = np.linspace(0, 1, num=k)
 i = 0
@@ -299,7 +366,7 @@ plt.show()
 
 # Problem 5
 pmax = 7
-lambda_opt = 0  # REPLACE THIS WITH lambda_opt estimated from Problem 3
+lambda_opt = opt_lambda  # REPLACE THIS WITH lambda_opt estimated from Problem 3
 mses5_train = np.zeros((pmax, 2))
 mses5 = np.zeros((pmax, 2))
 for p in range(pmax):
@@ -322,3 +389,4 @@ plt.plot(range(pmax), mses5)
 plt.title('MSE for Test Data')
 plt.legend(('No Regularization', 'Regularization'))
 plt.show()
+
